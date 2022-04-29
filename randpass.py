@@ -23,7 +23,7 @@ def get_random_special():
 
 
 def generate_passwd(
-    pw_len: int,
+    pw_len: int = 128,
     lower: bool = True,
     upper: bool = True,
     numbers: bool = True,
@@ -38,7 +38,7 @@ def generate_passwd(
     You can choose character sets to exclude and weights, how much of the string, for each character sets.
 
     Args:
-        pw_len          (int):               The number of characters in the generated password.    Default is 50
+        pw_len          (int):               The number of characters in the generated password.    Default is 128
 
     Character Sets: 
         lower           (bool, optional):    Lower case characters.  Defaults to True.
@@ -89,6 +89,12 @@ def generate_passwd(
         # Gather info to calculate spread and weight for values not set
         if character_sets[case]['use'] == True and character_sets[case]['weight'] == None:
             char_spread += 1
+        # If weight is set to 100 generate the char array with only this char set. 
+        elif character_sets[case]['use'] == True and character_sets[case]['weight'] == 100:
+            char_builder = []
+            while char_builder.__len__() < pw_len:
+                char_builder.append(character_sets[case]['func']())
+            return ''.join(char_builder)
         # Calculate spread for values that are set
         elif character_sets[case]['use'] == True and character_sets[case]['weight'] != None:
             # Remove weight if set from total available
@@ -121,13 +127,16 @@ def generate_passwd(
         this_char_set = random.choice(choices)
         character_sets[this_char_set]['count'] -= 1
         char_builder.append(character_sets[this_char_set]['func']())
+    # Ensures a more equal distribution of characters when heavy weights are set
+    for i in range(0, 5):
+        random.shuffle(char_builder)
     # Convert the character array into a string and return the string
     return ''.join(char_builder)
 
 
 if __name__ == '__main__':
     kwargs = {
-        'pw_len': 50,
+        'pw_len': 128,
         'lower': True,
         'upper': True,
         'numbers': True,
@@ -154,7 +163,7 @@ if __name__ == '__main__':
     ]
     help_message = """
     General:
-        -p, --passwd-length     The number of characters in the generated password, Default is 50
+        -p, --passwd-length     The number of characters in the generated password, Default is 128
         -h, --help              Print this help message
 
     Enable or Disable Character Sets:
